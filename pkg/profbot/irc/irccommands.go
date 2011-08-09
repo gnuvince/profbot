@@ -11,6 +11,11 @@ func (c *Connection) Sendf(s string, v ...interface{}) {
 }
 
 
+func (c *Connection) Privmsg(target, msg string) {
+	c.Sendf("PRIVMSG %s :%s", target, msg)
+}
+
+
 func (c *Connection) Nick(nick string) {
 	c.Sendf("NICK %s", nick)
 }

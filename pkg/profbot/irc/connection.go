@@ -27,6 +27,9 @@ type Connection struct {
 	in chan Message
 	out chan string
 	quit chan bool
+
+	snarfers []Snarfer
+	commands map[string]UserCommand
 }
 
 
@@ -41,6 +44,8 @@ func NewCustom(f func() (*net.Conn, *bufio.ReadWriter)) *Connection {
 	conn.in = make(chan Message, 64)
 	conn.out = make(chan string, 64)
 	conn.quit = make(chan bool)
+	conn.snarfers = []Snarfer{}
+	conn.commands = map[string]UserCommand{}
 	conn.sock, conn.io = f()
 
 	return conn
@@ -103,6 +108,9 @@ func (c *Connection) Loop() {
 		select {
 		case m := <- c.in:
 			fmt.Printf("%+v\n", m)
+			if *m.LastParameter() == "hi" {
+				c.Privmsg(*m.Target(), "yo")
+			}
 
 		case <- c.quit:
 			return

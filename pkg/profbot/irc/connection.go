@@ -108,8 +108,8 @@ func (c *Connection) Loop() {
 		select {
 		case m := <- c.in:
 			fmt.Printf("%+v\n", m)
-			if *m.LastParameter() == "hi" {
-				c.Privmsg(*m.Target(), "yo")
+			for _, snarfer := range c.snarfers {
+				go snarfer(c, &m)
 			}
 
 		case <- c.quit:

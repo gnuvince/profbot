@@ -6,10 +6,15 @@ import (
 	"os/signal"
 
 	"profbot/irc"
+	"profbot/config"
+	"profbot/snarfers"
 )
 
 
 func main() {
+	flags := config.GetFlags()
+	flags.Parse(os.Args[1:])
+
 	c, err := irc.Connect("localhost", "6667")
 	defer c.Close()
 
@@ -27,10 +32,12 @@ func main() {
 		}
 	}()
 
+	c.RegisterSnarfer(snarfers.Pong)
+	c.RegisterSnarfer(snarfers.Nickserv)
 
-	c.Nick("profbot")
-	c.User("profbot", "profbot")
-	c.Join("#programmeur")
+	c.Nick(config.Nickname)
+	c.User(config.Nickname, config.Nickname)
+	c.Join(config.Channel)
 
 	c.Loop()
 }

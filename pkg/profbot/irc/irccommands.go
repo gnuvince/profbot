@@ -34,3 +34,8 @@ func (c *Connection) Join(channel string) {
 func (c *Connection) Quit(reason string) {
 	c.Sendf("QUIT %s", reason)
 }
+
+
+func (c *Connection) Pong(server string) {
+	c.Sendf("PONG :%s", server)
+}

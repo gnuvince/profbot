@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 /*
@@ -22,7 +23,7 @@ import (
      down the IRC connection.
  */
 type Connection struct {
-	sock *net.Conn
+	sock net.Conn
 	buf *bufio.ReadWriter
 	in chan Message
 	out chan string
@@ -35,11 +36,9 @@ type Connection struct {
 
 
 /*
- * Create a new Connection object.  The sock and buf objects are returned
- * by a closure passed as a parameter.  This function is mostly useful
- * for tests.
+ * Create a new Connection object.
  */
-func NewCustom(c *net.Conn, buf *bufio.ReadWriter) *Connection {
+func New(c net.Conn) *Connection {
 	conn := new(Connection)
 	conn.in = make(chan Message, 64)
 	conn.out = make(chan string, 64)
@@ -47,7 +46,9 @@ func NewCustom(c *net.Conn, buf *bufio.ReadWriter) *Connection {
 	conn.snarfers = []Snarfer{}
 	conn.commands = map[string]UserCommand{}
 	conn.sock = c
-	conn.buf = buf
+	conn.buf = bufio.NewReadWriter(
+		bufio.NewReader(conn.sock),
+		bufio.NewWriter(conn.sock))
 
 	return conn
 }
@@ -62,9 +63,7 @@ func Connect(hostname, port string) (*Connection, os.Error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewCustom(&conn, bufio.NewReadWriter(
-		bufio.NewReader(conn),
-		bufio.NewWriter(conn))), nil
+	return New(conn), err
 }
 
 
@@ -75,9 +74,8 @@ func Connect(hostname, port string) (*Connection, os.Error) {
 func (c *Connection) Close() {
 	log.Println("Closing connection...")
 
-	if c.sock != nil {
-		(*c.sock).Close()
-	}
+	c.sock.Close()
+
 	close(c.in)
 	close(c.out)
 	close(c.quit)
@@ -143,6 +141,7 @@ func (c *Connection) recv() {
  */
 func (c *Connection) send() {
 	for s := range c.out {
+		s = strings.TrimSpace(s)
 		if _, err := c.buf.WriteString(s + "\r\n"); err != nil {
 			log.Fatalf("c.send(): %s", err.String())
 		}

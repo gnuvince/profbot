@@ -34,8 +34,8 @@ func main() {
 		}
 	}()
 
-	nickserv.Register(c)
-	pong.Register(c)
+	c.Register(pong.New())
+	c.Register(nickserv.New())
 
 	c.Nick(config.Nickname)
 	c.User(config.Nickname, config.Nickname)

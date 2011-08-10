@@ -150,3 +150,14 @@ func (c *Connection) send() {
 }
 
 
+
+
+func (c *Connection) Register(p Plugin) {
+	for _, snarfer := range p.Snarfers() {
+		c.RegisterSnarfer(snarfer)
+	}
+
+	for _, command := range p.Commands() {
+		c.RegisterCommand(command.Name, command)
+	}
+}

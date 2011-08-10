@@ -1,3 +1,7 @@
 package irc
 
-type UserCommand func(*Connection, *Message)
+type UserCommand struct {
+	Name string
+	Help string
+	Fn func(*Connection, *Message)
+}

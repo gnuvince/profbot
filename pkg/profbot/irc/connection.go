@@ -12,7 +12,7 @@ import (
 /*
  * A connection to an IRC server has the following properties:
  * - A socket connected to the IRC server (can be nil for testing)
- * - An io buffer to communicate with the IRC server
+ * - An buf buffer to communicate with the IRC server
  * - An input channel: after the raw strings from the inbound stream
  *   has been parsed, that Message is send on the inbound channel
  *   where it'll be dispatched.
@@ -23,7 +23,7 @@ import (
  */
 type Connection struct {
 	sock *net.Conn
-	io *bufio.ReadWriter
+	buf *bufio.ReadWriter
 	in chan Message
 	out chan string
 	quit chan bool
@@ -35,7 +35,7 @@ type Connection struct {
 
 
 /*
- * Create a new Connection object.  The sock and io objects are returned
+ * Create a new Connection object.  The sock and buf objects are returned
  * by a closure passed as a parameter.  This function is mostly useful
  * for tests.
  */
@@ -47,7 +47,7 @@ func NewCustom(c *net.Conn, buf *bufio.ReadWriter) *Connection {
 	conn.snarfers = []Snarfer{}
 	conn.commands = map[string]UserCommand{}
 	conn.sock = c
-	conn.io = buf
+	conn.buf = buf
 
 	return conn
 }
@@ -123,7 +123,7 @@ func (c *Connection) Loop() {
  */
 func (c *Connection) recv() {
 	for {
-		s, err := c.io.ReadString('\n')
+		s, err := c.buf.ReadString('\n')
 		if err != nil {
 			log.Fatalf("c.recv(): %s", err.String())
 		}
@@ -143,10 +143,10 @@ func (c *Connection) recv() {
  */
 func (c *Connection) send() {
 	for s := range c.out {
-		if _, err := c.io.WriteString(s + "\r\n"); err != nil {
+		if _, err := c.buf.WriteString(s + "\r\n"); err != nil {
 			log.Fatalf("c.send(): %s", err.String())
 		}
-		c.io.Flush()
+		c.buf.Flush()
 	}
 }
 

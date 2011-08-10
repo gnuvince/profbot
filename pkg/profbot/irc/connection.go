@@ -39,14 +39,15 @@ type Connection struct {
  * by a closure passed as a parameter.  This function is mostly useful
  * for tests.
  */
-func NewCustom(f func() (*net.Conn, *bufio.ReadWriter)) *Connection {
+func NewCustom(c *net.Conn, buf *bufio.ReadWriter) *Connection {
 	conn := new(Connection)
 	conn.in = make(chan Message, 64)
 	conn.out = make(chan string, 64)
 	conn.quit = make(chan bool)
 	conn.snarfers = []Snarfer{}
 	conn.commands = map[string]UserCommand{}
-	conn.sock, conn.io = f()
+	conn.sock = c
+	conn.io = buf
 
 	return conn
 }
@@ -61,11 +62,9 @@ func Connect(hostname, port string) (*Connection, os.Error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewCustom(func () (*net.Conn, *bufio.ReadWriter) {
-		return &conn, bufio.NewReadWriter(
-			bufio.NewReader(conn),
-			bufio.NewWriter(conn))
-	}), nil
+	return NewCustom(&conn, bufio.NewReadWriter(
+		bufio.NewReader(conn),
+		bufio.NewWriter(conn))), nil
 }
 
 

@@ -7,7 +7,9 @@ import (
 
 	"profbot/irc"
 	"profbot/config"
-	"profbot/snarfers"
+
+	"profbot/plugins/pong"
+	"profbot/plugins/nickserv"
 )
 
 
@@ -32,8 +34,8 @@ func main() {
 		}
 	}()
 
-	c.RegisterSnarfer(snarfers.Pong)
-	c.RegisterSnarfer(snarfers.Nickserv)
+	nickserv.Register(c)
+	pong.Register(c)
 
 	c.Nick(config.Nickname)
 	c.User(config.Nickname, config.Nickname)

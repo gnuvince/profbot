@@ -1,6 +1,7 @@
 package irc
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -22,7 +23,7 @@ type Message struct {
 // client).  This is a convenience method to get that parameter.
 // It returns nil if the list of parameters is empty, but
 // in practice this should not happen.
-func (m Message) LastParameter() *string {
+func (m *Message) LastParameter() *string {
 	if len(m.Parameters) != 0 {
 		return &m.Parameters[len(m.Parameters) - 1]
 	}
@@ -31,7 +32,7 @@ func (m Message) LastParameter() *string {
 
 
 // Return the user or channel to whom the message is destined.
-func (m Message) Target() *string {
+func (m *Message) Target() *string {
     if len(m.Parameters) > 0 {
         return &m.Parameters[0]
     }
@@ -42,7 +43,31 @@ func (m Message) Target() *string {
 // Break the last parameter (usually the text of a PRIVMSG) into
 // words
 var splitter *regexp.Regexp = regexp.MustCompile(`[^ \t]+`)
-func (m Message) Split() []string {
+func (m *Message) Split() []string {
 	parts := splitter.FindAllString(*m.LastParameter(), -1)
 	return parts
+}
+
+
+func (m *Message) String() string {
+	switch m.Command {
+	case "JOIN":
+		return fmt.Sprintf("* %s has joined %s", m.Nick, *m.Target())
+	case "PART":
+		return fmt.Sprintf("* %s has left %s", m.Nick, *m.Target())
+	case "QUIT":
+		return fmt.Sprintf("* %s has quit: %s", m.Nick, *m.LastParameter())
+	case "NICK":
+		return fmt.Sprintf("* %s is now known as %s", m.Nick, *m.LastParameter())
+	case "TOPIC":
+		return fmt.Sprintf("* %s has changed the topic of %s: %s",
+			m.Nick, *m.Target(), *m.LastParameter())
+	case "PRIVMSG":
+		if m.Parameters[1] == "ACTION" {
+			return fmt.Sprintf("* %s %s", m.Nick, *m.LastParameter())
+		} else {
+			return fmt.Sprintf("<%s> %s", m.Nick, *m.LastParameter())
+		}
+	}
+	return fmt.Sprintf("<UNKNOWN MESSAGE TYPE: %s>", m.Command)
 }

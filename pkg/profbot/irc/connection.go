@@ -8,6 +8,8 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"profbot/config"
 )
 
 /*
@@ -105,6 +107,15 @@ func (c *Connection) Loop() {
 		select {
 		case m := <- c.in:
 			fmt.Printf("%+v\n", m)
+
+			if strings.HasPrefix(*m.LastParameter(), config.Prefix) {
+				parts := m.Split()
+				cmd, ok := c.commands[parts[0]]
+				if ok {
+					cmd.Fn(c, &m)
+				}
+			}
+
 			for _, snarfer := range c.snarfers {
 				go snarfer(c, &m)
 			}
@@ -158,6 +169,6 @@ func (c *Connection) Register(p Plugin) {
 	}
 
 	for _, command := range p.Commands() {
-		c.RegisterCommand(command.Name, command)
+		c.RegisterCommand(config.Prefix + command.Name, command)
 	}
 }

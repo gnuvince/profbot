@@ -10,6 +10,7 @@ import (
 
 	"profbot/plugins/pong"
 	"profbot/plugins/nickserv"
+	"profbot/plugins/url"
 )
 
 
@@ -36,6 +37,7 @@ func main() {
 
 	c.Register(pong.New())
 	c.Register(nickserv.New())
+	c.Register(url.New(":memory:"))
 
 	c.Nick(config.Nickname)
 	c.User(config.Nickname, config.Nickname)

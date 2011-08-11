@@ -19,7 +19,7 @@ func main() {
 	flags := config.GetFlags()
 	flags.Parse(os.Args[1:])
 
-	c, err := irc.Connect("localhost", "6667")
+	c, err := irc.Connect(config.Server, config.Port)
 	defer c.Close()
 
 
@@ -38,8 +38,8 @@ func main() {
 
 	c.Register(pong.New())
 	c.Register(nickserv.New())
-	c.Register(url.New(":memory:"))
-	c.Register(seen.New(":memory:"))
+	c.Register(url.New(config.DatabaseName))
+	c.Register(seen.New(config.DatabaseName))
 
 	c.Nick(config.Nickname)
 	c.User(config.Nickname, config.Nickname)

@@ -27,9 +27,9 @@ type t struct {
 }
 
 
-func New(dbname string) *t {
+func New(dbConn *sqlite.Conn) *t {
 	plugin := new(t)
-	plugin.db = db.Open(dbname)
+	plugin.db = dbConn
 
 	if !db.TableExists(plugin.db, tableName) {
 		log.Printf("Creating table %s", tableName)

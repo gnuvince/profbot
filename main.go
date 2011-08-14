@@ -7,6 +7,7 @@ import (
 
 	"profbot/irc"
 	"profbot/config"
+	"profbot/db"
 
 	"profbot/plugins/pong"
 	"profbot/plugins/nickserv"
@@ -36,10 +37,13 @@ func main() {
 		}
 	}()
 
+	dbConn := db.Open(config.DatabaseName)
+	defer dbConn.Close()
+
 	c.Register(pong.New())
 	c.Register(nickserv.New())
-	c.Register(url.New(config.DatabaseName))
-	c.Register(seen.New(config.DatabaseName))
+	c.Register(url.New(dbConn))
+	c.Register(seen.New(dbConn))
 
 	c.Nick(config.Nickname)
 	c.User(config.Nickname, config.Nickname)

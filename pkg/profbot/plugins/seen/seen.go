@@ -61,6 +61,10 @@ func (s *t) Commands() []irc.UserCommand {
 
 
 func (s *t) snarf(conn *irc.Connection, msg *irc.Message) {
+	if msg.String() == "" {
+		return
+	}
+
 	stmt, err := s.db.Prepare(
 		fmt.Sprintf("select id from %s where nick like ?", tableName))
 	defer stmt.Finalize()

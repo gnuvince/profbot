@@ -69,5 +69,5 @@ func (m *Message) String() string {
 			return fmt.Sprintf("<%s> %s", m.Nick, *m.LastParameter())
 		}
 	}
-	return fmt.Sprintf("<UNKNOWN MESSAGE TYPE: %s>", m.Command)
+	return ""
 }
